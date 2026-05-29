@@ -2,7 +2,8 @@ from pydantic import BaseModel, validator, Field
 from typing import Optional, List
 from datetime import date, datetime
 
-class DepartmentBase(BaseModel):
+# --- Запросы ---
+class DepartmentCreateRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
     parent_id: Optional[int] = None
 
@@ -10,10 +11,7 @@ class DepartmentBase(BaseModel):
     def trim_name(cls, v):
         return v.strip()
 
-class DepartmentCreate(DepartmentBase):
-    pass
-
-class DepartmentUpdate(BaseModel):
+class DepartmentUpdateRequest(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=200)
     parent_id: Optional[int] = None
 
@@ -21,7 +19,7 @@ class DepartmentUpdate(BaseModel):
     def trim_name(cls, v):
         return v.strip() if v else v
 
-class EmployeeBase(BaseModel):
+class EmployeeCreateRequest(BaseModel):
     full_name: str = Field(..., min_length=1, max_length=200)
     position: str = Field(..., min_length=1, max_length=200)
     hired_at: Optional[date] = None
@@ -30,17 +28,7 @@ class EmployeeBase(BaseModel):
     def trim_strings(cls, v):
         return v.strip()
 
-class EmployeeCreate(EmployeeBase):
-    pass
-
-class EmployeeOut(EmployeeBase):
-    id: int
-    department_id: int
-    created_at: datetime
-
-    class Config:
-        orm_mode = True
-
+# --- Ответы ---
 class DepartmentOut(BaseModel):
     id: int
     name: str
@@ -50,10 +38,21 @@ class DepartmentOut(BaseModel):
     class Config:
         orm_mode = True
 
-class DepartmentDetail(BaseModel):
+class EmployeeOut(BaseModel):
+    id: int
+    department_id: int
+    full_name: str
+    position: str
+    hired_at: Optional[date] = None
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+class DepartmentDetailOut(BaseModel):
     department: DepartmentOut
     employees: List[EmployeeOut] = []
-    children: List["DepartmentDetail"] = []
+    children: List['DepartmentDetailOut'] = []
 
     class Config:
         orm_mode = True

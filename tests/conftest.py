@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from app.database import Base, get_db
 from app.main import app
 
-TEST_DATABASE_URL = "postgresql://user:password@localhost:5432/test_org_structure"  # нужно поднять отдельную тестовую БД
+TEST_DATABASE_URL = "postgresql://user:password@localhost:5432/test_org_structure"  # нужно поднять тестовую БД
 
 engine = create_engine(TEST_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

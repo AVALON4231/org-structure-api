@@ -2,18 +2,18 @@
 # Organizational Structure API
 
 REST API для управления оргструктурой компании: подразделения и сотрудники.  
-Реализовано на FastAPI с многослойной архитектурой (роутер → контроллер → сервис → репозиторий), PostgreSQL, Alembic-миграциями и полной контейнеризацией через Docker.
 
 ---
 
-## 📐 Архитектура
+# Чистая архитектура
 
-| Слой          | Ответственность |
-|---------------|-----------------|
-| **Router**    | Принимает HTTP-запрос, делегирует контроллеру, возвращает ответ. Без логики. |
-| **Controller**| Преобразует DTO (Pydantic) в вызовы сервиса и обратно. |
-| **Service**   | Вся бизнес-логика: валидация, проверка ограничений, сценарии. |
-| **Repository**| Инкапсулирует запросы к БД через SQLAlchemy. Никакой бизнес-логики. |
+Реализация тестового задания с полным разделением слоёв:
+- **Роутер** – только транспорт, делегирует контроллеру.
+- **Контроллер** – вызывает сервисы и формирует HTTP-ответ.
+- **Сервис** – бизнес-логика, работает с DTO.
+- **Репозиторий** – доступ к БД, возвращает ORM-модели.
+- **Валидаторы** – изолированные проверки входящих данных.
+- **DTO** – отдельные объекты для передачи между сервисами и контроллерами (одна таблица – один DTO).
 
 ---
 
@@ -151,26 +151,38 @@ docker-compose exec app pytest
 org-structure-api/
 ├── app/
 │   ├── __init__.py
-│   ├── main.py                # Точка входа FastAPI
-│   ├── database.py            # Подключение к БД
-│   ├── models.py              # SQLAlchemy модели
-│   ├── schemas.py             # Pydantic схемы
-│   └── v1/
-│       ├── __init__.py
-│       ├── router.py          # Маршруты (только транспорт)
-│       ├── controller.py      # Контроллер (адаптация данных)
-│       ├── services.py        # Бизнес-логика
-│       └── repositories.py    # Доступ к БД
-├── migrations/                # Alembic миграции
+│   ├── main.py                    # Точка входа FastAPI
+│   ├── database.py                # Подключение к БД
+│   ├── models.py                  # SQLAlchemy модели
+│   ├── api/
+│   │   ├── router.py              # Маршруты (транспортный слой)
+│   │   └── schemas.py             # Pydantic-схемы запросов/ответов
+│   ├── controllers/               # Контроллеры (обработка HTTP запросов)
+│   │   ├── department_controller.py
+│   │   └── employee_controller.py
+│   ├── services/                  # Бизнес-логика
+│   │   ├── department_service.py
+│   │   └── employee_service.py
+│   ├── repositories/              # Доступ к данным (ORM)
+│   │   ├── department_repo.py
+│   │   └── employee_repo.py
+│   ├── validators/                # Валидация входных данных
+│   │   ├── department_validator.py
+│   │   └── employee_validator.py
+│   └── dto/                       # Data Transfer Objects (внутренние объекты)
+│       ├── department.py
+│       └── employee.py
+├── migrations/                    # Alembic миграции
 │   ├── env.py
 │   └── versions/
+│       └── 001_initial.py
 ├── tests/
 │   ├── conftest.py
 │   └── test_api.py
-├── pyproject.toml             # Зависимости
+├── pyproject.toml                 # Зависимости
 ├── Dockerfile
 ├── docker-compose.yml
-├── Makefile                   # Удобные команды для Linux/macOS
+├── Makefile                       # Удобные команды для Linux/macOS
 └── README.md
 ```
 
