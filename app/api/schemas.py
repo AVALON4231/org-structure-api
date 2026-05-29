@@ -1,11 +1,11 @@
-from pydantic import BaseModel, validator, Field
+from pydantic import BaseModel, validator, Field, ConfigDict
 from typing import Optional, List
 from datetime import date, datetime
 
 # --- Запросы ---
 class DepartmentCreateRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
-    parent_id: Optional[int] = None
+    parent_id: Optional[int] = Field(default=None, json_schema_extra={"nullable": True})
 
     @validator("name")
     def trim_name(cls, v):
@@ -30,15 +30,16 @@ class EmployeeCreateRequest(BaseModel):
 
 # --- Ответы ---
 class DepartmentOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     parent_id: Optional[int]
     created_at: datetime
 
-    class Config:
-        orm_mode = True
-
 class EmployeeOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     department_id: int
     full_name: str
@@ -46,13 +47,9 @@ class EmployeeOut(BaseModel):
     hired_at: Optional[date] = None
     created_at: datetime
 
-    class Config:
-        orm_mode = True
-
 class DepartmentDetailOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     department: DepartmentOut
     employees: List[EmployeeOut] = []
     children: List['DepartmentDetailOut'] = []
-
-    class Config:
-        orm_mode = True
