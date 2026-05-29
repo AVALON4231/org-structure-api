@@ -15,7 +15,6 @@ def test_create_employee_not_found(client):
 def test_move_department_cycle(client):
     d1 = client.post("/departments/", json={"name": "A"}).json()
     d2 = client.post("/departments/", json={"name": "B", "parent_id": d1["id"]}).json()
-    # Попытка переместить A в B (цикл)
     resp = client.patch(f"/departments/{d1['id']}", json={"parent_id": d2["id"]})
     assert resp.status_code == 409
 
@@ -26,6 +25,5 @@ def test_delete_cascade(client):
     }).json()
     resp = client.delete(f"/departments/{d['id']}?mode=cascade")
     assert resp.status_code == 204
-    # Проверим, что отдел удалён
     resp = client.get(f"/departments/{d['id']}")
     assert resp.status_code == 404

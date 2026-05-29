@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, Query, Path
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app import crud, schemas
-from typing import Optional
+from app import schemas
+from app.v1.controller import DepartmentController
 
 router = APIRouter()
 
 @router.post("/", response_model=schemas.DepartmentOut, status_code=201)
 def create_department(data: schemas.DepartmentCreate, db: Session = Depends(get_db)):
-    return crud.create_department(db, data)
+    return DepartmentController.create(db, data)
 
 @router.post("/{department_id}/employees/", response_model=schemas.EmployeeOut, status_code=201)
 def create_employee(
@@ -16,7 +16,7 @@ def create_employee(
     data: schemas.EmployeeCreate = ...,
     db: Session = Depends(get_db)
 ):
-    return crud.create_employee(db, department_id, data)
+    return DepartmentController.create_employee(db, department_id, data)
 
 @router.get("/{department_id}", response_model=schemas.DepartmentDetail)
 def get_department(
@@ -25,7 +25,7 @@ def get_department(
     include_employees: bool = True,
     db: Session = Depends(get_db)
 ):
-    return crud.get_department_detail(db, department_id, depth, include_employees)
+    return DepartmentController.get(db, department_id, depth, include_employees)
 
 @router.patch("/{department_id}", response_model=schemas.DepartmentOut)
 def update_department(
@@ -33,7 +33,7 @@ def update_department(
     data: schemas.DepartmentUpdate = ...,
     db: Session = Depends(get_db)
 ):
-    return crud.update_department(db, department_id, data)
+    return DepartmentController.update(db, department_id, data)
 
 @router.delete("/{department_id}", status_code=204)
 def delete_department(
@@ -42,5 +42,4 @@ def delete_department(
     reassign_to_department_id: Optional[int] = Query(None),
     db: Session = Depends(get_db)
 ):
-    crud.delete_department(db, department_id, mode, reassign_to_department_id)
-    return
+    DepartmentController.delete(db, department_id, mode, reassign_to_department_id)
